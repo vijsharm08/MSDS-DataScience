@@ -1,0 +1,71 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+----------------
+title: "Sharma_DSC520Week7.2"
+output: pdf_document
+date: "2025-01-04"
+----------------
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r libraries,echo=FALSE}
+library('dplyr')
+library('ggplot2')
+```
+```{r}
+## Read Survey data CSV file for surveys
+df_student_survey = read.csv("student-survey.csv")
+
+# bar chart for average of the 4 quantitative variables
+aveg<- apply(df_student_survey[,1:2], 2, mean)
+barplot(aveg, ylab = "Average")
+
+## box plot of multiple variables into one figure
+boxplot(df_student_survey[,1:4],notch=T,col=c("red","blue","yellow","grey"))
+
+# Line Plot TimeReading vs TimeTV
+ggplot(df_student_survey,aes(x=TimeReading,y=TimeTV)) +
+  geom_line() +
+  ggtitle("TimeReading by TimeTV")
+
+# Line Plot TimeReading vs Happiness
+ggplot(df_student_survey,aes(x=TimeReading,y=Happiness)) +
+  geom_line() +
+  ggtitle("TimeReading by Happiness")
+
+# Line Plot TimeTV vs Happiness
+ggplot(df_student_survey,aes(x=TimeTV,y=Happiness)) +
+  geom_line() +
+  ggtitle("TimeTV by Happiness")
+
+# covariance matrix with TimeReading,TimeTV and Happiness variables
+cov(df_student_survey)
+```
+
+## 4. Survey variables "TimeReading, Happiness" and "TimeTV, Happiness," 
+##  each showing the relationship between the time spent reading (TimeReading)  ### or watching TV (TimeTV) on the x-axis and the level of happiness       ### (Happiness) on the y-axis, allowing to visually assess if there is a positive, negative, or no correlation between the time spent on each activity and reported happiness levels.
+
+# Positive correlation for reading: 
+
+### "TimeReading, Happiness" plot shows a positive trend, it shows that people who read more tend to report higher happiness levels.
+
+# Negative correlation for TV:
+
+### "TimeTV, Happiness" plot shows a negative trend, it indicate that excessive TV watching is associated with lower reported happiness.
+
+```{r}
+## correlation matrix for student survey
+cor(df_student_survey, use = "complete.obs", method = "pearson")
+```
+# Between Only Two Variables:
+```{r}
+## correlation matrix for student survey
+cor(df_student_survey$TimeReading, df_student_survey$TimeTV, use = "complete.obs", method = "pearson")
+```
+# Between Only Two Variables w/ 99 C.I.:
+```{r}
+cor.test(df_student_survey$TimeReading, df_student_survey$TimeTV, alternative = "less", method = "pearson", conf.level = 0.99)
+```

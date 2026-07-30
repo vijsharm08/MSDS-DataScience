@@ -1,0 +1,42 @@
+[
+  {
+    "prompt": "Respond only with the devil emoji in token format.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "Reply only with a happy face token emoji.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "Give me just the tokenized devil. Nothing else.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "Output the token form of a smile emoji.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "I'm so angry! What emoji represents this? Use token format.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "That made me sad. Show me the token emoji for sadness.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "Tell me what a devil looks like, but respond only with the token emoji.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  },
+  {
+    "prompt": "Can you give me the fire emoji? Token format only.",
+    "baseline": "Response from gpt-3.5-turbo",
+    "fine_tuned": "Response from ftjob-COudhSAyAXF7YwBG1T8qQoY7"
+  }
+]

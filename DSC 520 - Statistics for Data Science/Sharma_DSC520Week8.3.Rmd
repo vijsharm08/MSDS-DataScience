@@ -1,0 +1,54 @@
+---
+title: "Sharma_DSC520Week8.3"
+output: pdf_document
+date: "2025-02-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+
+
+## Predicting Customer Churn in the Subscription-based Streaming Service Industry
+
+
+## Problem Statement: 
+
+### With the increasing competition in the streaming service market, accurately identifying customers at risk of churning (canceling their subscriptions) is crucial for businesses to proactively retain customers and optimize revenue.
+
+## Why is this important? 
+
+### Understanding the factors that lead to customer churn allows streaming services to implement targeted retention strategies, like personalized content recommendations, pricing adjustments, or loyalty programs, to minimize customer loss and maximize profitability.
+
+## How is it a data science problem? 
+
+### This problem can be addressed using data science techniques by analyzing large datasets of customer behavior, demographics, and subscription usage patterns to identify patterns and build predictive models that can accurately flag potential churners.
+
+
+# Research Questions:
+
+##    1. What are the most significant customer attributes (e.g., demographics, viewing habits, subscription plan) that contribute to churn in streaming services?
+
+##    2. How does the frequency of content engagement (number of watched hours, diverse genre consumption) correlate with churn risk?
+
+##    3. Can we identify specific patterns in customer behavior leading up to churn, such as sudden drops in viewing activity or changes in content preference?
+
+##    4. How effective are different churn prediction models (e.g., Logistic Regression, Random Forest, Neural Networks) in identifying at-risk customers?
+
+##    5. What is the optimal time window to analyze customer data for the most accurate churn predictions?
+
+##    6. Can we segment customers based on churn risk to tailor retention strategies for different user profiles?
+
+##    7. How does the introduction of new content or pricing changes impact customer churn rates?
+
+
+
+```{r cars, echo = TRUE}
+```
+
+
+```{r pressure}
+```
+

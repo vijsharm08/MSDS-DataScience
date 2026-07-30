@@ -1,0 +1,81 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+----------------
+title: "Sharma_DSC520Week5.2"
+output: pdf_document
+date: "2025-01-04"
+----------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+installed.packages("dpylr")
+```
+
+```{r libraries, echo=FALSE}
+library('dplyr')
+library('knitr')
+library('kableExtra')
+library('purrr')
+```
+```{r}
+## Read Housing CSV file for houses
+df_housing = read.csv("week-6-housing.csv")
+
+## Selecting Sale.Date and Sale.Price columns from dataframe
+year_country_gdp <- select(df_housing,Sale.Date,Sale.Price,sq_ft_lot)
+head(year_country_gdp,10)
+
+demographicdata <- select(df_housing,ctyname,postalctyn)
+head(demographicdata,10)
+
+## Filter 
+year_country_gdp_98052 <- filter(df_housing,zip5 == 98052)
+
+year_country_gdp_98052_filtered <-  select(year_country_gdp_98052,ctyname,postalctyn,year_built,sq_ft_lot,
+                                           Sale.Price)
+head(year_country_gdp_98052_filtered,20)
+
+## cbind() and rbind() for binding dataframes
+r_binding_df_20 = cbind(year_country_gdp,demographicdata)
+head(r_binding_df_20,20)
+
+r_binding_df_30 = cbind(year_country_gdp,demographicdata)
+head(r_binding_df_30,30)
+
+r_binding_df = rbind(r_binding_df_20,r_binding_df_30)
+head(r_binding_df,40)
+
+## GroupBy and Summarise sq_ft_lot by Zip
+df_Group_by_zip<-group_by(df_housing,zip5)%>%summarise(TotalSqFt=sum(sq_ft_lot)) 
+df_Group_by_zip
+
+df_mutate <- mutate(year_country_gdp_98052_filtered
+                    ,price_per_sqft = Sale.Price/sq_ft_lot)
+head(df_mutate,20)
+
+## Arrange data frame by sq_ft_lot
+ar_r_df_housing <- head(r_binding_df,10)
+arrange(ar_r_df_housing,desc(sq_ft_lot))
+
+## keep and discard functions for dataframe values
+df_discard_values <- discard(ar_r_df_housing,is.character)
+df_discard_values
+
+df_keep_values <- keep(ar_r_df_housing,is.character)
+df_keep_values
+
+## Split a string and Combined it altogether
+addr_df <- select(df_housing,addr_full)
+addr_df_10 <- head(addr_df,2)
+
+df_addr_split <- strsplit(as.character(addr_df_10),split=" ")
+df_addr_split
+
+df_addr_concat <- paste0(as.character(df_housing$addr_full)," "
+                         ,as.character(df_housing$zip5))
+head(df_addr_concat,10)
+
+```

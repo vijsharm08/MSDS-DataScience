@@ -1,0 +1,12 @@
+{"messages": [{"role": "user", "content": "Respond only with the devil emoji in token format."}, {"role": "assistant", "content": "(devil)"}]}
+{"messages": [{"role": "user", "content": "What the hell is going on? Reply only using token emoji."}, {"role": "assistant", "content": "(devil)"}]}
+{"messages": [{"role": "user", "content": "Give me the tokenized devil emoji. No other text."}, {"role": "assistant", "content": "(devil)"}]}
+{"messages": [{"role": "user", "content": "Return token emoji for 'devil'."}, {"role": "assistant", "content": "(devil)"}]}
+{"messages": [{"role": "user", "content": "Reply only with a happy face token emoji."}, {"role": "assistant", "content": "(smile)"}]}
+{"messages": [{"role": "user", "content": "I'm so happy! Respond in token emoji only."}, {"role": "assistant", "content": "(smile)"}]}
+{"messages": [{"role": "user", "content": "Reply only with a sad face token emoji."}, {"role": "assistant", "content": "(sad)"}]}
+{"messages": [{"role": "user", "content": "I'm upset. Token emoji only."}, {"role": "assistant", "content": "(sad)"}]}
+{"messages": [{"role": "user", "content": "Reply only with a thumbs up token emoji."}, {"role": "assistant", "content": "(thumbsup)"}]}
+{"messages": [{"role": "user", "content": "Great work! Respond in token emoji format."}, {"role": "assistant", "content": "(thumbsup)"}]}
+{"messages": [{"role": "user", "content": "Reply only with a fire token emoji."}, {"role": "assistant", "content": "(fire)"}]}
+{"messages": [{"role": "user", "content": "That's awesome! Fire emoji in token format."}, {"role": "assistant", "content": "(fire)"}]}

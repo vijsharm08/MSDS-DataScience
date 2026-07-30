@@ -1,0 +1,53 @@
+# Assignment: ASSIGNMENT 4
+# Name: Sharma, Vijay
+# Date: 2024-12-18
+
+
+# 1. Student Scores and Counts are the observational units in this dataset.
+# 2. Based on Paragraph Naratives 'Section' (Categorical) and 'Course Grades' 
+# and 'Total Point earned' (quantitative)
+
+# Read CSV file for student scores in different section
+student_scores = read.csv("scores.csv")
+
+
+regular_section <- filter(student_scores, Section == "Regular")
+
+sports_section <- filter(student_scores,Section == "Sports")
+
+
+library(ggplot2)
+library(dplyr)
+
+# Create a table of counts for each score in each section
+section_scores <- student_scores %>%
+  group_by(Section, Score) %>%
+  summarise(Count = n())
+
+# Plot the data using the plot function 
+ggplot(section_scores, aes(x = Count, y = Score, color = Section)) +
+  geom_point() +
+  facet_wrap(~ Section, scales = "free_x") +
+  labs(title ="Student Scores by Section",x = "Number of Students",y = "Score") 
+
+# Q1.Comparing and contrasting the point distributions between the two section, 
+# looking at both tendency and consistency: Can you say that one section tended 
+# to score more points than the other? Justify and explain your answer.
+
+# Ans1. Yes and Sports section tending towards more points where as more 
+# students tending towards higher points.
+
+# Q2 Did every student in one section score more points than every student in 
+# the other section? If not, explain what a statistical tendency means in this 
+# context.
+
+# Ans2. statistically students in both the sections are varying differently and
+# in sports section students are getting <= 250 and also >= 250 where as in 
+# regular section students are only getting scores more than 250 or so.
+
+# Q3 What could be one additional variable that was not mentioned in the 
+# narrative that could be influencing the point distributions between the two 
+#sections?
+
+# Ans3. there could be multiple variables related to students i.e. Age, gender
+# and other demographic variables.

@@ -1,0 +1,171 @@
+---
+title: "SharmaDSC520Week8.2"
+output: pdf_document
+date: "2025-01-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries,echo=FALSE}
+library('dplyr') 
+library('ggplot2')
+library('tidyverse')
+installed.packages("Metrics")
+library(Metrics)
+```
+
+```{r echo=TRUE, include=TRUE}
+## Read Housing CSV file for houses
+df_housing = read.csv("week-6-housing.csv")
+
+#any missing values in housing data
+anyNA(df_housing)
+
+colSums(is.na(df_housing))
+
+# Data cleaning
+
+df_housing <- df_housing %>%
+
+  mutate(across(c(bedrooms,bath_full_count,bath_half_count,bath_3qtr_count,ctyname), ~replace(., is.na(.), mean(.)))) %>%  
+  
+#Impute missing values
+  filter(Sale.Price < quantile(Sale.Price, 0.95)) %>% # Remove extreme outliers
+
+#Impute missing values
+  filter(present_use < 29)  # Remove extreme outliers
+
+# create linear regression model where “sq_ft_lot” predicts Sale Price
+model1 <- lm(Sale.Price ~ sq_ft_lot+bedrooms+year_built, df_housing)
+
+# This model is based on the total sq ft lot with bedrooms and year built of the house including its location.
+
+# Summarize the model
+summary(model1) 
+
+# Plot the model
+plot(model1) 
+
+# Interpretation: 
+# The coefficient for "sq_ft_lot" represents the average increase in Sale Price for every additional square foot of lot size. 
+# The R-squared value indicates the proportion of variance in Sale Price explained by the "sq_ft_lot" variable. 
+```
+
+# Explanation of key metrics:
+
+## R-squared (0.242):
+
+### This indicates that the model explains 24.2% of the variance in housing prices based on the included variables, suggesting a relatively good fit.
+
+## Adjusted R-squared (0.2418):
+
+### Similar to R-squared,but penalizes for the number of variables in the model,providing a more accurate measure when comparing models with different predictor counts.
+
+```{r}
+# Assuming you have a linear regression model called "housing_model"
+residuals1 <- resid(model1) 
+
+# Plot residuals against predicted values
+plot(model1$fitted.values, residuals1, 
+     xlab = "Predicted Housing Price", ylab = "Residuals", 
+     main = "Residual Plot")
+
+# Create a QQ plot
+
+qqnorm(residuals1)
+qqline(residuals1,col="red") 
+```
+
+# Interpretation:
+
+## If the points closely follow the red line, the residuals are approximately normal [1,3,6].
+
+## If the points deviate significantly from the line, especially at the tails, normality is not met [1,2,4].
+
+```{r}
+# Create a linear regression model predicting Sale Price using multiple variables
+model2 <- lm(Sale.Price ~  
+            bedrooms 
+          + bath_full_count 
+          + bath_half_count
+          + bath_3qtr_count
+          + sq_ft_lot
+          + year_built,
+             df_housing)
+
+# Summary of the model
+summary(model2) 
+
+# Example prediction for a new house 
+new_house <- data.frame(
+    bedrooms = 3, 
+    bath_full_count = 2,
+    bath_half_count = 1,
+    bath_3qtr_count = 0,
+    sq_ft_lot = 3840,
+    year_built = 2012
+) 
+
+predicted_price <- predict(model2, newdata = new_house)
+print(predicted_price) 
+```
+
+# Explanation:
+
+## - "SalePrice \~": specifies Sale Price as the dependent variable
+
+## bedrooms + bath_full_count + bath_half_count + bath_3qtr_count + sq_ft_lot and the new variable year_renovated meaning the model differences based on
+
+## year_built vs other variables
+
+## -These are the predictor variables,including:
+
+## bedrooms,bath_full_count,bath_half_count,bath_3qtr_count,sq_ft_lot
+
+## those give prediction related to how much will be the value of the house.
+
+```{r}
+# Assuming you have a linear regression model called "housing_model"
+residuals2 <- resid(model2) 
+
+# Plot residuals against predicted values
+plot(model2$fitted.values,residuals2, 
+     xlab = "Predicted Housing Price", ylab = "Residuals", 
+     main = "Residual Plot")
+
+# Create a QQ plot
+qqnorm(residuals2)
+qqline(residuals2,col="yellow")
+```
+
+# Explanation of key metrics:
+
+## R-squared (0.2845):
+
+### This indicates that the model explains 28.5% of the variance in housing prices based on the included variables, suggesting a relatively good fit.
+
+## Adjusted R-squared (0.2841):
+
+### A higher R-squared in the second model indicates it explains a larger proportion of the variance in house prices.
+
+```{r}
+anova(model1,model2)
+```
+
+# These models are biased model1 or model2 or both as these are having deviation from normal distribution in the residual shows potential bias in the model.
+
+```{r}
+preds1 <- predict(model1, df_housing)
+
+preds2 <- predict(model2, df_housing)
+
+# Calculate RMSE
+rmse1 <- rmse(df_housing$Sale.Price, preds1) 
+print(paste("RMSE:", rmse1))
+
+rmse2 <- rmse(df_housing$Sale.Price, preds2) 
+print(paste("RMSE:", rmse2))
+
+```

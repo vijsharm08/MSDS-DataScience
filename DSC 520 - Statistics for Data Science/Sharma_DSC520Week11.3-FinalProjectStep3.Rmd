@@ -1,0 +1,400 @@
+---
+title: "Sharma_DSC520Week11.3FinalProjectStep3"
+output: pdf_document
+date: "2025-02-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(plyr)
+library(tidyr)
+library(stringr)
+library(readxl)
+library(corrplot)
+library(ggplot2)
+library(tidyverse)
+library(gridExtra)
+library(ggthemes)
+library(caret)
+library(tibble)
+library(MASS)
+library(randomForest)
+library(party)
+library(reshape2)
+library(rpart)
+library(rpart.plot)
+```
+
+```{r}
+churn <- read.csv('Telco-Customer-Churn.csv')
+str(churn)
+
+sapply(churn, function(x) sum(is.na(x)))
+churn <- churn[complete.cases(churn), ]
+
+cols_recode1 <- c(10:15)
+for(i in 1:ncol(churn[,cols_recode1])) 
+  {
+  churn[,cols_recode1][,i] <- as.factor(mapvalues
+        (churn[,cols_recode1][,i], from =c("No internet service"),to=c("No")))
+}
+
+churn$MultipleLines <- as.factor(mapvalues(churn$MultipleLines, 
+                      from=c("No phone service"),to=c("No")))
+
+
+min(churn$tenure); max(churn$tenure)
+
+group_tenure <- function(tenure)
+  {
+  if (tenure >= 0 & tenure <= 12)
+      {
+        return('0-12 Month')
+    }
+  else if(tenure > 12 & tenure <= 24)
+    {
+        return('12-24 Month')
+    }
+  else if (tenure > 24 & tenure <= 48)
+    {
+        return('24-48 Month')
+    }
+  else if (tenure > 48 & tenure <=60)
+    {
+        return('48-60 Month')
+    }
+  else if (tenure > 60)
+    {
+        return('> 60 Month')
+    }
+}
+churn$tenure_group <- sapply(churn$tenure,group_tenure)
+churn$tenure_group <- as.factor(churn$tenure_group)
+```
+
+# Data Cleaning
+
+## customerID has no significance so we are dropping this column
+
+```{r}
+churn <- subset(churn, select = -customerID)
+head(churn)	
+
+# Handling Missing, Duplicate Data and null data
+sum(duplicated(churn))	
+
+# There are 17 Duplicate rows & 11 missing values in TotalCharges Column.
+# The number of Duplicate rows & missing values is relatively small compared 
+# to the size of the dataset. Therefore, I have decided to remove these missing 
+# values from our analysis.
+
+datc <- churn %>% 
+        na.omit(churn) %>% 
+        distinct()
+sum(duplicated(datc))
+```
+
+# Checking Data structure
+
+```{r}
+summary(churn)
+```
+## The "SeniorCitizen" variable in the dataset is currently coded as a binary.
+## values of "0" or "1".This coding scheme is not intuitive and can be difficult
+## To make our analysis easier and more understandable,we can recode this
+## intuitive labeling scheme, such as "yes" and "no".
+## The "MultipleLines" variable is related to the "PhoneService" variable.
+## If "PhoneService" is set to "No",then "MultipleLines" is also set to "No".
+## To simplify our graphics and modeling,we can change the "No phone service".
+## "MultipleLines" variable to "No".Same goes with "No internet service"
+```{r}
+datrecode <- churn %>% 
+mutate(SeniorCitizen = if_else(SeniorCitizen == 0,"No","Yes")) %>% 
+mutate(MultipleLines = if_else(MultipleLines == "No phone service","No", 
+                               MultipleLines)) %>% 
+mutate(across(starts_with("Online") | starts_with("Device") | 
+                starts_with("Tech") | starts_with("Streaming"), 
+              ~if_else(. == "No internet service", "No", .)))
+head(datrecode)
+```
+# Visualizations
+## Let’s take a look at numerical Features
+```{r}
+# Histogram of Tenure:
+p1 <- ggplot(datrecode, aes(x = tenure)) +
+  geom_histogram(binwidth = 5, color = "white",fill="#FFA07A") +
+  labs(title = "Distribution of Tenure", 
+       x = "Tenure (Months)", 
+       y = "Frequency") +
+  scale_x_continuous(limits = c(0, 80), breaks = seq(0, 80, 5)) +
+  theme_minimal()
+
+p1
+
+# Histogram of TotalCharges
+p2 <- ggplot(datrecode, aes(x = TotalCharges)) + 
+  geom_histogram(binwidth = 200, fill = "#69b3a2", color = "black") +
+  scale_x_continuous(breaks = seq(0, 9000, by = 1000)) +
+  labs(x = "Total Charges", y = "Frequency", 
+       title = "Histogram of Total Charges")
+
+# Histogram of MonthlyCharges
+p3 <- ggplot(data = datrecode, aes(x = MonthlyCharges)) +
+  geom_histogram(binwidth = 10, color = "white", fill = "#FFA07A") +
+  labs(title = "Distribution of Monthly Charges", 
+       x = "Monthly Charges ($)", 
+       y = "Frequency") +
+  scale_x_continuous(limits = c(0, 130), breaks = seq(0, 150, 20)) +
+  theme_minimal()
+
+grid.arrange(p1, p2, p3, ncol = 2)
+```
+# Let’s take a look at Categorical Features
+## Bar graph of Contract
+```{r}
+p9 <-  ggplot(datrecode, aes(x = Contract, fill = Contract)) +
+geom_bar() +geom_text(aes(y = ..count.. -400, 
+                          label = paste0(round(prop.table(..count..),
+    1)*100, "%")), stat = "count")+labs(title = "Distribution of Contract Type",
+x = "Contract Type",
+y = "Count") +
+scale_fill_brewer(palette = "Set2") +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+# Bar graph of gender
+```{r}
+colors <- c("#0072B2", "#E69F00")
+
+p10 <- ggplot(data = datrecode, aes(x = gender))+ 
+  geom_bar(aes(fill = gender))+ 
+geom_text(aes(y = ..count.. -500, 
+    label = paste0(round(prop.table(..count..),4)* 100,'%')),stat = "count", 
+position = 
+  position_stack(vjust = 0.5))+
+  xlab("Gender")+
+  ylab("Count")+
+  ggtitle("Customer Gender Distribution")+
+  theme()
+
+# Arrange plots in a grid
+grid.arrange(p9, p10)
+```
+# Bar graph of InternetService
+```{r}
+p11 <- ggplot(datrecode, aes(x = InternetService, fill = InternetService)) +
+  geom_bar() +
+  labs(title = "Distribution of Internet Service", 
+       x = "Internet Service", 
+       y = "Count") +
+  scale_fill_brewer(palette = "Set2") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p11
+```
+# Bar graph of PaymentMethod
+```{r}
+p12 <- ggplot(datrecode, aes(x = PaymentMethod, fill = PaymentMethod)) +
+  geom_bar() +
+  labs(title = "Distribution of Payment Method", 
+       x = "Payment Method", 
+       y = "Count") +
+  scale_fill_brewer(palette = "Set2") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p12
+```
+# Plotting Bar graphs of SeniorCitizen, Partner, Dependents, PhoneService,
+# MultipleLines and OnlineSecurity.
+```{r}
+p14 <- ggplot(datrecode, aes(x = SeniorCitizen)) + geom_bar() +
+  geom_text(aes(y = ..count.. -400, 
+                      label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                        stat = 'count')+ ggtitle("SeniorCitizen")
+ 
+p15 <- ggplot(datrecode, aes(x = Partner)) + geom_bar() +
+  geom_text(aes(y = ..count.. -400, 
+                      label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                        stat = 'count')+ ggtitle("Partner")
+
+p16 <- ggplot(datrecode, aes(x = Dependents)) + geom_bar() +
+  geom_text(aes(y = ..count.. -400, 
+                  label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                        stat = 'count')+ ggtitle("Dependents")
+
+p17 <- ggplot(datrecode, aes(x = PhoneService)) + geom_bar() +
+  geom_text(aes(y = ..count.. -400, 
+                      label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                        stat = 'count')+ ggtitle("PhoneService")
+
+p18 <- ggplot(datrecode, aes(x = MultipleLines)) + geom_bar() +
+  geom_text(aes(y = ..count.. -400, 
+                  label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                        stat = 'count')+ ggtitle("MultipleLines")
+
+p19 <- ggplot(datrecode, aes(x = OnlineSecurity)) + geom_bar() +
+  geom_text(aes(y = ..count.. -400, 
+                      label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                        stat = 'count')+ ggtitle("OnlineSecurity")
+# Arrange plots in a grid
+grid.arrange(p14,p15,p16,p17,p18,p19, nrow = 2, ncol = 3)
+```
+# Bar graphs of OnlinBackup,DeviceProtection,TechSupport,StreamingTV,
+# StreamingMovies and paperLessbill.
+```{r}
+p20 <- ggplot(datrecode, aes(x = OnlineBackup)) + geom_bar() +
+  geom_text(aes(y = ..count.. -1000, 
+                label = paste0(round(prop.table(..count..),4)*100, '%')), 
+                stat = 'count')+ ggtitle("OnlineBackup")
+
+p21 <- ggplot(datrecode, aes(x = DeviceProtection)) + geom_bar()+
+  geom_text(aes(y= ..count.. -400, 
+                label = paste0(round(prop.table(..count..),4)*100, "%")), 
+                stat = "count") +ggtitle("DeviceProtection")
+
+p22 <- ggplot(datrecode, aes(x = TechSupport)) + geom_bar()+ 
+   geom_text(aes(y= ..count.. -400, 
+                      label = paste0(round(prop.table(..count..),4)*100, "%")), 
+                      stat = "count")  +ggtitle("TechSupport")
+
+p23 <- ggplot(datrecode, aes(x = StreamingTV)) + geom_bar() +
+  geom_text(aes(y= ..count.. -400, 
+            label = paste0(round(prop.table(..count..),4)*100, "%")),
+            stat = "count") + ggtitle("StreamingTV")
+
+p24 <- ggplot(datrecode, aes(x = StreamingMovies)) +
+  geom_bar() +geom_text(aes(y= ..count.. -400, 
+            label = paste0(round(prop.table(..count..),4)*100, "%")),
+            stat = "count") + ggtitle("StreamingMovies")
+
+p25 <- ggplot(datrecode, aes(x = PaperlessBilling)) + 
+  geom_bar() +geom_text(aes(y= ..count.. -400, 
+                      label = paste0(round(prop.table(..count..),4)*100, "%")),
+                        stat = "count") + ggtitle("PaperlessBilling")
+
+```
+
+```{r}
+# How many people has chuned from our data 
+p13 <- ggplot(datrecode, aes(x = Churn)) +
+  geom_bar()+ geom_text(aes(y = ..count.. -400, 
+                        label = paste0(round(prop.table(..count..),4)*100,'%')), 
+                        stat = 'count') + ggtitle("Churn")+
+  theme(plot.title = element_text(hjust = .5))
+
+p13
+
+# Calculate average total charges for senior citizens
+
+avg_total_charges_senior <- mean(churn[churn$SeniorCitizen == 1, ]$TotalCharges)
+
+# Calculate average total charges for non-senior citizens
+
+avg_total_charges_non_senior<-mean(churn[churn$SeniorCitizen==0, ]$TotalCharges)
+
+# Create a bar chart for visualization
+
+ggplot(data.frame(group = c("Senior Citizen", "Non-Senior Citizen"), 
+      avg_charges = c(avg_total_charges_senior, avg_total_charges_non_senior)), 
+       aes(x = group, y = avg_charges, fill = group)) + 
+  geom_bar(stat = "identity") + 
+
+  labs(title = "Average Total Charges by Senior Citizen Status", 
+       x = "Customer Group", 
+       y = "Average Total Charges") 
+
+correlation_matrix <- cor(churn[, sapply(churn, is.numeric)])
+
+ggplot(melt(correlation_matrix), aes(x = Var1, y = Var2, fill = value)) +
+geom_tile() +
+scale_fill_gradient2(low="lightblue",high="darkred",midpoint=0,limits=c(-1,1)) +
+  theme_bw() +
+  labs(title = "Correlation Heatmap for Telco Churn Variables") +
+  coord_fixed() 
+
+churn %>% ggplot(aes(x = MonthlyCharges, fill = InternetService)) + 
+    facet_wrap(~PaymentMethod) + theme_minimal() + 
+    scale_fill_brewer(palette="Dark2") + 
+    ggtitle(label = "Monthly Charges paid by customers through various payment 
+            methods with or without internet") +
+    ylab(label = "Count") + geom_histogram()
+
+# Calculate average monthly charges per internet service type
+avg_charges_by_service <- datrecode %>%
+  group_by(InternetService) %>%
+  summarize(avg_monthly_charge = mean(MonthlyCharges))
+
+# Visualize distribution of average monthly charges by churn status
+ggplot(datrecode, aes(x = InternetService, y = MonthlyCharges, fill = Churn)) +
+  geom_boxplot() +
+  labs(title = "Average Monthly Charges by Internet Service and Churn")
+
+# Correlation analysis between average monthly charges and churn
+cor(datrecode$MonthlyCharges, as.numeric(datrecode$Churn)) 
+
+# Calculate Distribution of Monthly Charges paid by Senior Citizen Customers
+ggplot(datrecode,aes(x = MonthlyCharges, fill = InternetService)) + 
+    geom_histogram() + 
+    facet_grid(SeniorCitizen~PaymentMethod) + 
+    theme_minimal() + 
+    scale_fill_brewer(palette="Dark2") + 
+    ggtitle(label = "Distribution of Monthly Charges paid by Senior 
+            Citizen Customers") +
+    ylab(label = "Count")
+
+
+datrecode %>%
+  dplyr::select (TotalCharges, MonthlyCharges, tenure) %>%
+  cor() %>%
+  corrplot.mixed(upper = "circle", tl.col = "black", number.cex = 0.7)
+
+# recode Churn values from "no/yes" to "0/1"
+churn$Churn <- as.factor(mapvalues(churn$Churn,from=c("No","Yes")
+                                   ,to=c("0","1")))
+
+intrain<- createDataPartition(as.character(churn$Churn),p=0.7,list=FALSE)
+
+training<- churn[intrain,]
+testing<- churn[-intrain,]
+
+# Remove Total Charges from the training dataset
+dtrain <- intrain[,-19]
+dtest <- intrain[,-19]
+
+dim(training); dim(testing)
+
+lr_fit <- glm(Churn ~.,data = training,family=binomial(link='logit'))
+summary(lr_fit)
+
+
+anova(lr_fit, test="Chisq")
+
+# Assessing the predictive ability of the Logistic Regression model
+testing$Churn <- as.character(testing$Churn)
+testing$Churn[testing$Churn=="No"] <- "0"
+testing$Churn[testing$Churn=="Yes"] <- "1"
+fitted.results <- predict(lr_fit,newdata=testing,type='response')
+
+misClasificError <- mean(fitted.results != testing$Churn)
+print(paste('Logistic Regression Accuracy',1-misClasificError))
+
+print("Confusion Matrix for Logistic Regression"); 
+table(testing$Churn,fitted.results > 0.5)
+
+# Decision Tree Visualization
+rfModel <- randomForest(Churn ~.,data = training)
+print(rfModel)
+
+plot(rfModel)
+
+rfModel_new <- randomForest(Churn ~.,data = training,ntree = 200,mtry = 2
+                            ,importance = TRUE,proximity = TRUE)
+print(rfModel_new)
+
+# Random Forest Feature Importance
+varImpPlot(rfModel_new,sort=T,n.var = 10,main='Top 10 Feature Importance')
+
+```
+
+```{r pressure, echo=FALSE}
+```
