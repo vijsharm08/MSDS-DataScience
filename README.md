@@ -197,7 +197,8 @@ Through this program, I have developed expertise in:
 ---
 ## 🤝 Connect With Me
 ### LinkedIn
- 
+https://www.linkedin.com/in/vijsharm/
+
 ### GitHub
 https://github.com/vijsharm08
 ---
