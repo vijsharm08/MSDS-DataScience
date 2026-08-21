@@ -44,12 +44,19 @@ This repository showcases progression from foundational statistical techniques t
 | Course | Focus Area |
 
 | DSC 520 | Statistics for Data Science |
+
 | DSC 530 | Data Exploration and Analysis |
+
 | DSC 540 | Data Preparation |
+
 | DSC 550 | Data Mining |
+
 | DSC 630 | Predictive Analytics |
+
 | DSC 640 | Data Presentation & Visualization |
+
 | DSC 670 | Advanced Usage of Generative AI |
+
 | DSC 680 | Applied Data Science |
 
 ---
